@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout - Iyke Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; min-height: 100vh; }
+    
+    /* Header */
+    .header { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .header-content { max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .back-link { display: flex; align-items: center; gap: 0.5rem; color: #374151; text-decoration: none; font-weight: 500; }
+    .back-link:hover { color: #3b82f6; }
+    .back-link svg { width: 20px; height: 20px; }
+    .header h1 { font-size: 1.25rem; font-weight: bold; }
+    
+    /* Container */
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .checkout-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+    
+    /* Form Section */
+    .form-section { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1.125rem; font-weight: bold; margin-bottom: 1rem; color: #111827; }
+    .section-title svg { width: 20px; height: 20px; color: #3b82f6; }
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+    .form-input { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; }
+    .form-input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    
+    /* Payment Options */
+    .payment-option { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem; }
+    .payment-option:hover { border-color: #3b82f6; background: #eff6ff; }
+    .payment-option.selected { border-color: #3b82f6; background: #eff6ff; }
+    .payment-option input[type="radio"] { width: 18px; height: 18px; cursor: pointer; }
+    .payment-info { flex: 1; }
+    .payment-title { font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
+    .payment-desc { font-size: 0.875rem; color: #6b7280; }
+    
+    /* Summary */
+    .summary-card { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); color: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); position: sticky; top: 1rem; }
+    .summary-title { font-size: 1.125rem; font-weight: bold; margin-bottom: 1rem; }
+    .summary-items { margin-bottom: 1rem; max-height: 200px; overflow-y: auto; }
+    .summary-item { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.75rem; }
+    .summary-divider { border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1rem; margin-bottom: 1rem; }
+    .summary-total { display: flex; justify-content: space-between; font-size: 0.875rem; margin-bottom: 0.5rem; }
+    .summary-total.grand { font-size: 1.125rem; font-weight: bold; }
+    .summary-note { font-size: 0.75rem; opacity: 0.9; margin-bottom: 1.5rem; }
+    .place-order-btn { width: 100%; background: white; color: #3b82f6; font-weight: bold; padding: 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+    .place-order-btn:hover { transform: scale(1.02); }
+    .place-order-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .message { font-size: 0.875rem; margin-top: 1rem; text-align: center; }
+    
+    /* Responsive */
+    @media (min-width: 1024px) {
+      .checkout-grid { grid-template-columns: 2fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .form-grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="/cart.html" class="back-link">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        <span>Back to Cart</span>
+      </a>
+      <h1>Checkout</h1>
+      <div style="width: 100px;"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="checkout-grid">
+      <!-- Left Column: Forms -->
+      <div>
+        <!-- Shipping Details -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Shipping Information
+          </h2>
+          
+          <form id="shipping-form" class="form-grid">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Full Name *</label>
+                <input id="fullName" type="text" required class="form-input" placeholder="John Doe" />
+              </div>
+              
+              <div class="form-group">
+                <label>Email *</label>
+                <input id="email" type="email" required class="form-input" placeholder="you@example.com" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Phone Number *</label>
+              <input id="phone" type="tel" required class="form-input" placeholder="+234 800 000 0000" />
+            </div>
+
+            <div class="form-group">
+              <label>Address Line 1 *</label>
+              <input id="address1" type="text" required class="form-input" placeholder="123 Main Street" />
+            </div>
+
+            <div class="form-group">
+              <label>Address Line 2</label>
+              <input id="address2" type="text" class="form-input" placeholder="Apartment, suite, etc." />
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>City *</label>
+                <input id="city" type="text" required class="form-input" placeholder="Umuahia" />
+              </div>
+              
+              <div class="form-group">
+                <label>State *</label>
+                <input id="state" type="text" required class="form-input" placeholder="Abia" oninput="calculateShipping()" />
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label>Postal Code</label>
+                <input id="postalCode" type="text" class="form-input" placeholder="100001" />
+              </div>
+              
+              <div class="form-group">
+                <label>Country *</label>
+                <input id="country" type="text" required class="form-input" value="Nigeria" />
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            Payment Method
+          </h2>
+          
+          <label class="payment-option selected">
+            <input type="radio" name="provider" value="paystack" checked />
+            <div class="payment-info">
+              <div class="payment-title">Card Payment (Paystack)</div>
+              <div class="payment-desc">Pay securely with your debit/credit card</div>
+            </div>
+          </label>
+
+          <label class="payment-option">
+            <input type="radio" name="provider" value="bank_transfer" />
+            <div class="payment-info">
+              <div class="payment-title">Bank Transfer</div>
+              <div class="payment-desc">Transfer to our bank account</div>
+            </div>
+          </label>
+
+          <label class="payment-option">
+            <input type="radio" name="provider" value="opay_transfer" />
+            <div class="payment-info">
+              <div class="payment-title">OPay Transfer</div>
+              <div class="payment-desc">Pay via OPay mobile app</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Right Column: Summary -->
+      <div>
+        <div class="summary-card">
+          <h2 class="summary-title">Order Summary</h2>
+          
+          <div id="order-items" class="summary-items"></div>
+          
+          <div class="summary-divider"></div>
+          
+          <div class="summary-total">
+            <span>Subtotal</span>
+            <span id="subtotal">₦0.00</span>
+          </div>
+          <div class="summary-total">
+            <span>Shipping Fee</span>
+            <span id="shipping-fee">₦0.00</span>
+          </div>
+          <div class="summary-total grand">
+            <span>Total</span>
+            <span id="total">₦0.00</span>
+          </div>
+          <p class="summary-note">Shipping: ₦3,000 (Abia) | ₦7,000 (Other states)</p>
+          
+          <button id="place-order-btn" class="place-order-btn">Place Order</button>
+
+          <p id="message" class="message"></p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Payment option styling
+    document.querySelectorAll('.payment-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        this.querySelector('input[type="radio"]').checked = true;
+      });
+    });
+
+    function getCart() {
+      try {
+        const userId = localStorage.getItem('userId') || 'guest';
+        const cartKey = `cart_${userId}`;
+        return JSON.parse(localStorage.getItem(cartKey)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveCart(cart) {
+      try {
+        const userId = localStorage.getItem('userId') || 'guest';
+        const cartKey = `cart_${userId}`;
+        localStorage.setItem(cartKey, JSON.stringify(cart));
+      } catch {}
+    }
+
+    function getToken() {
+      return localStorage.getItem('accessToken') || '';
+    }
+
+    let subtotalAmount = 0;
+    let shippingFee = 0;
+
+    function calculateShipping() {
+      const state = document.getElementById('state').value.trim().toLowerCase();
+      
+      // Check if state is Abia
+      if (state === 'abia') {
+        shippingFee = 3000;
+      } else if (state) {
+        shippingFee = 7000;
+      } else {
+        shippingFee = 0;
+      }
+      
+      updateTotals();
+    }
+
+    function updateTotals() {
+      const total = subtotalAmount + shippingFee;
+      
+      document.getElementById('subtotal').textContent = `₦${subtotalAmount.toFixed(2)}`;
+      document.getElementById('shipping-fee').textContent = `₦${shippingFee.toFixed(2)}`;
+      document.getElementById('total').textContent = `₦${total.toFixed(2)}`;
+    }
+
+    function renderOrderSummary() {
+      const cart = getCart();
+      const container = document.getElementById('order-items');
+      
+      if (cart.length === 0) {
+        window.location.href = '/cart.html';
+        return;
+      }
+
+      container.innerHTML = '';
+      subtotalAmount = 0;
+
+      cart.forEach((item) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'summary-item';
+        const lineTotal = (item.price || 0) / 100 * item.quantity;
+        itemDiv.innerHTML = `
+          <span>${item.name} (${item.size}) ×${item.quantity}</span>
+          <span>₦${lineTotal.toFixed(2)}</span>
+        `;
+        container.appendChild(itemDiv);
+        subtotalAmount += lineTotal;
+      });
+
+      calculateShipping();
+    }
+
+    document.getElementById('place-order-btn').addEventListener('click', async () => {
+      const cart = getCart();
+      if (cart.length === 0) {
+        alert('Your cart is empty');
+        return;
+      }
+
+      const form = document.getElementById('shipping-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const shipping = {
+  fullName: document.getElementById('fullName').value.trim(),
+  email: document.getElementById('email').value.trim(),
+  phone: document.getElementById('phone').value.trim(),
+  addressLine1: document.getElementById('address1').value.trim(),
+  addressLine2: document.getElementById('address2').value.trim(),
+  city: document.getElementById('city').value.trim(),
+  state: document.getElementById('state').value.trim(),
+  postalCode: document.getElementById('postalCode').value.trim(),
+  country: document.getElementById('country').value.trim(),
+};
+
+      const provider = document.querySelector('input[name="provider"]:checked').value;
+
+      const items = cart.map((item) => ({
+        productId: item.productId,
+        size: item.size,
+        quantity: item.quantity,
+      }));
+
+      const token = getToken();
+      if (!token) {
+        alert('Please login before checkout');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const msgEl = document.getElementById('message');
+      const btn = document.getElementById('place-order-btn');
+      
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      msgEl.textContent = '';
+
+      try {
+        console.log('Sending payment request...', { items, shipping, provider });
+        
+        const res = await fetch('/api/payments/init', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ items, shipping, provider }),
+        });
+
+        console.log('Response status:', res.status);
+        
+        const data = await res.json();
+        console.log('Response data:', data);
+
+        if (!res.ok) {
+          console.error('Payment init failed:', data);
+          msgEl.textContent = data.error || 'Checkout failed';
+          msgEl.style.color = '#fca5a5';
+          btn.disabled = false;
+          btn.textContent = 'Place Order';
+          return;
+        }
+
+        if (data.provider === 'paystack' && data.authorizationUrl) {
+          console.log('Redirecting to Paystack:', data.authorizationUrl);
+          // Clear cart after successful order
+          saveCart([]);
+          // Redirect to Paystack
+          window.location.href = data.authorizationUrl;
+          return;
+        }
+
+        // For bank transfer or OPay
+msgEl.style.color = '#86efac';
+msgEl.innerHTML = `
+  <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+    <p style="font-weight: 600; margin-bottom: 0.5rem;">✅ Order Placed Successfully!</p>
+    <p style="font-size: 0.75rem; margin-top: 0.5rem;"><strong>Order ID:</strong> ${data.orderId || 'N/A'}</p>
+    <p style="font-size: 0.75rem;"><strong>Reference:</strong> ${data.reference}</p>
+    <p style="font-size: 0.75rem;"><strong>Amount:</strong> ₦${(data.amount / 100).toFixed(2)}</p>
+    <hr style="margin: 0.75rem 0; border-color: rgba(255,255,255,0.3);">
+    <p style="font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem;">Payment Instructions:</p>
+    <p style="font-size: 0.75rem;">${data.instructions}</p>
+  </div>
+`;
+
+        
+        // Clear cart
+        saveCart([]);
+        btn.textContent = 'Order Placed';
+      } catch (error) {
+        console.error('Checkout error:', error);
+        msgEl.textContent = 'Network error: ' + error.message;
+        msgEl.style.color = '#fca5a5';
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+      }
+    });
+
+    const userEmail = localStorage.getItem('userEmail');
+    if (userEmail) {
+    document.getElementById('email').value = userEmail;
+    }
+
+    document.getElementById('state').addEventListener('input', calculateShipping);
+
+    renderOrderSummary();
+  </script>
+</body>
+</html>

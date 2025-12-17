@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Payment Processing - Iyke Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      min-height: 100vh; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      padding: 1rem;
+    }
+    
+    .card { 
+      background: white; 
+      border-radius: 16px; 
+      padding: 2rem; 
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      max-width: 500px;
+      text-align: center;
+    }
+    
+    .loader {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1.5rem;
+      border: 4px solid #e5e7eb;
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .success-icon.show { display: flex; }
+    
+    .success-icon svg {
+      width: 50px;
+      height: 50px;
+      color: white;
+    }
+    
+    h1 { font-size: 1.5rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem; }
+    p { color: #6b7280; margin-bottom: 1.5rem; }
+    
+    .btn { 
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); 
+      color: white; 
+      font-weight: 600; 
+      padding: 0.875rem 1.5rem; 
+      border-radius: 8px; 
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+    }
+    
+    .error { color: #ef4444; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="loader" class="loader"></div>
+    <div id="success-icon" class="success-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
+    
+    <h1 id="title">Verifying Payment...</h1>
+    <p id="message">Please wait while we confirm your payment.</p>
+    
+    <a href="/index.html" id="home-btn" class="btn" style="display: none;">Continue Shopping</a>
+  </div>
+
+  <script>
+    async function verifyPayment() {
+      const params = new URLSearchParams(window.location.search);
+      const reference = params.get('reference') || params.get('trxref');
+      
+      if (!reference) {
+        document.getElementById('title').textContent = 'Error';
+        document.getElementById('message').textContent = 'No payment reference found';
+        document.getElementById('message').classList.add('error');
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('home-btn').style.display = 'inline-block';
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch(`/api/payments/verify/${reference}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('success-icon').classList.add('show');
+          document.getElementById('title').textContent = 'Payment Successful!';
+          document.getElementById('message').textContent = 'Your order has been confirmed. Thank you for shopping with us!';
+          document.getElementById('home-btn').style.display = 'inline-block';
+          
+          // Clear cart
+          localStorage.removeItem('cart');
+        } else {
+          throw new Error('Payment verification failed');
+        }
+      } catch (error) {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('title').textContent = 'Verification Failed';
+        document.getElementById('message').textContent = 'We could not verify your payment. Please contact support.';
+        document.getElementById('message').classList.add('error');
+        document.getElementById('home-btn').style.display = 'inline-block';
+      }
+    }
+
+    verifyPayment();
+  </script>
+</body>
+</html>

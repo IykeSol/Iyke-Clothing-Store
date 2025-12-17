@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Orders - IykeStore</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; }
+    
+    /* Header */
+    .header { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 50; }
+    .header-content { max-width: 1280px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+    .header-icons { display: flex; gap: 1rem; align-items: center; }
+    .icon-btn { padding: 0.5rem; cursor: pointer; background: none; border: none; position: relative; }
+    .icon-btn svg { width: 24px; height: 24px; color: #374151; }
+    .icon-btn:hover svg { color: #3b82f6; }
+    .cart-badge { position: absolute; top: 0; right: 0; background: #ef4444; color: white; font-size: 0.75rem; border-radius: 9999px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    
+    /* Logout Icon */
+    #logout-icon svg { color: #ef4444; }
+    #logout-icon:hover svg { color: #dc2626; }
+    
+    /* Container */
+    .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 2rem; color: #111827; margin-bottom: 0.5rem; }
+    .page-header p { color: #6b7280; }
+    
+    /* Orders List */
+    .orders-list { display: flex; flex-direction: column; gap: 1.5rem; }
+    .order-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden; }
+    .order-header { padding: 1.25rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .order-info { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .order-info-item { display: flex; flex-direction: column; }
+    .order-info-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+    .order-info-value { font-size: 0.875rem; color: #111827; margin-top: 0.25rem; }
+    .order-status { padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-processing { background: #dbeafe; color: #1e40af; }
+    .status-shipped { background: #e0e7ff; color: #3730a3; }
+    .status-delivered { background: #d1fae5; color: #065f46; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    
+    /* Order Items */
+    .order-items { padding: 1.25rem; }
+    .order-item { display: flex; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid #e5e7eb; }
+    .order-item:last-child { border-bottom: none; }
+    .item-image { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background: #e5e7eb; }
+    .item-details { flex: 1; }
+    .item-name { font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
+    .item-meta { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; }
+    .item-price { font-weight: 600; color: #3b82f6; font-size: 0.875rem; }
+    
+    /* Order Footer */
+    .order-footer { padding: 1.25rem; background: #f9fafb; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .order-total { font-size: 1.125rem; font-weight: 700; color: #111827; }
+    .order-actions { display: flex; gap: 0.75rem; }
+    .btn { padding: 0.625rem 1.25rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; display: inline-block; }
+    .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); color: white; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-secondary { background: white; color: #374151; border: 1px solid #d1d5db; }
+    .btn-secondary:hover { background: #f9fafb; }
+    
+    /* Empty State */
+    .empty-state { text-align: center; padding: 4rem 1rem; background: white; border-radius: 12px; }
+    .empty-state svg { width: 100px; height: 100px; margin: 0 auto 1.5rem; color: #d1d5db; }
+    .empty-state h3 { font-size: 1.25rem; color: #111827; margin-bottom: 0.5rem; }
+    .empty-state p { color: #6b7280; margin-bottom: 1.5rem; }
+    
+    /* Loading */
+    .loading { text-align: center; padding: 3rem; }
+    .spinner { border: 3px solid #f3f4f6; border-top: 3px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* Shipping Details */
+    .shipping-details { padding: 1rem; background: #f9fafb; border-radius: 8px; margin-top: 1rem; }
+    .shipping-details h4 { font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.75rem; }
+    .shipping-details p { font-size: 0.875rem; color: #6b7280; margin-bottom: 0.25rem; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .page-header h1 { font-size: 1.5rem; }
+      .order-header { flex-direction: column; align-items: flex-start; }
+      .order-info { flex-direction: column; gap: 0.75rem; }
+      .order-footer { flex-direction: column; align-items: flex-start; }
+      .item-image { width: 60px; height: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="/index.html" class="logo">Iyke Store</a>
+      <div class="header-icons">
+        <a href="/index.html" class="icon-btn" title="Shop">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </a>
+        <a href="/cart.html" class="icon-btn" title="Cart">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span id="cart-badge" class="cart-badge" style="display:none;"></span>
+        </a>
+        <button id="logout-icon" class="icon-btn" style="display: none;" title="Logout">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="page-header">
+      <h1>My Orders</h1>
+      <p>Track and manage your orders</p>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p style="margin-top: 1rem; color: #6b7280;">Loading your orders...</p>
+    </div>
+
+    <div id="orders-container" style="display: none;"></div>
+  </main>
+
+  <script>
+  function checkAuth() {
+    const token = localStorage.getItem('accessToken');
+    console.log('🔍 Checking auth...');
+    console.log('Token exists:', !!token);
+    console.log('Token value:', token ? token.substring(0, 20) + '...' : 'null');
+    
+    if (!token) {
+      console.log('❌ No token - redirecting to login');
+      setTimeout(() => {
+        window.location.href = '/login.html';
+      }, 1000);
+      return false;
+    }
+    
+    console.log('✅ Token found - user is authenticated');
+    document.getElementById('logout-icon').style.display = 'block';
+    return true;
+  }
+
+  function logout() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    window.location.href = '/login.html';
+  }
+
+  function updateCartBadge() {
+    try {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+      const badge = document.getElementById('cart-badge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    } catch {}
+  }
+
+  function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function getStatusClass(status) {
+    const statusMap = {
+      'pending': 'status-pending',
+      'processing': 'status-processing',
+      'shipped': 'status-shipped',
+      'delivered': 'status-delivered',
+      'cancelled': 'status-cancelled'
+    };
+    return statusMap[status.toLowerCase()] || 'status-pending';
+  }
+
+  async function fetchOrders() {
+    console.log('📥 Fetching orders...');
+    try {
+      const token = localStorage.getItem('accessToken');
+      console.log('Using token:', token ? 'Yes' : 'No');
+      
+      const res = await fetch('/api/orders/my-orders', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      console.log('Response status:', res.status);
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          console.log('❌ 401 Unauthorized - logging out');
+          logout();
+          return;
+        }
+        throw new Error('Failed to fetch orders');
+      }
+
+      const data = await res.json();
+      console.log('✅ Orders fetched:', data.orders.length);
+      displayOrders(data.orders);
+
+    } catch (error) {
+      console.error('❌ Error fetching orders:', error);
+      document.getElementById('loading').innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <p style="color: #ef4444;">Failed to load orders. Please try again.</p>
+          <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">Retry</button>
+        </div>
+      `;
+    }
+  }
+
+  function displayOrders(orders) {
+  const loading = document.getElementById('loading');
+  const container = document.getElementById('orders-container');
+  
+  loading.style.display = 'none';
+  container.style.display = 'block';
+
+  if (orders.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        <h3>No orders yet</h3>
+        <p>Start shopping to see your orders here</p>
+        <a href="/index.html" class="btn btn-primary">Continue Shopping</a>
+      </div>
+    `;
+    return;
+  }
+
+  const ordersHTML = orders.map(order => {
+    // Debug log
+    console.log('Order data:', order);
+    console.log('Order ID:', order._id);
+    console.log('Order orderId:', order.orderId);
+    
+    const itemsHTML = order.items.map(item => `
+      <div class="order-item">
+        <img src="${item.productId?.images?.[0] || 'https://via.placeholder.com/80'}" alt="${item.name}" class="item-image" />
+        <div class="item-details">
+          <div class="item-name">${item.name}</div>
+          <div class="item-meta">Size: ${item.size} • Qty: ${item.quantity}</div>
+          <div class="item-price">₦${(item.price / 100).toFixed(2)}</div>
+        </div>
+      </div>
+    `).join('');
+
+    // Use _id or orderId, whichever exists
+    const displayOrderId = order.orderId || order._id || 'N/A';
+    
+    return `
+      <div class="order-card">
+        <div class="order-header">
+          <div class="order-info">
+            <div class="order-info-item">
+              <span class="order-info-label">Order ID</span>
+              <span class="order-info-value">${displayOrderId}</span>
+            </div>
+            <div class="order-info-item">
+              <span class="order-info-label">Date</span>
+              <span class="order-info-value">${formatDate(order.createdAt)}</span>
+            </div>
+            <div class="order-info-item">
+              <span class="order-info-label">Items</span>
+              <span class="order-info-value">${order.items.length} item${order.items.length > 1 ? 's' : ''}</span>
+            </div>
+          </div>
+          <span class="order-status ${getStatusClass(order.status)}">${order.status.toUpperCase()}</span>
+        </div>
+        
+        <div class="order-items">
+          ${itemsHTML}
+          
+          ${order.shipping ? `
+            <div class="shipping-details">
+              <h4>Shipping Address</h4>
+              <p><strong>${order.shipping.fullName}</strong></p>
+              <p>${order.shipping.addressLine1}${order.shipping.addressLine2 ? ', ' + order.shipping.addressLine2 : ''}</p>
+              <p>${order.shipping.city}, ${order.shipping.state} ${order.shipping.postalCode}</p>
+              <p>${order.shipping.phone}</p>
+            </div>
+          ` : ''}
+        </div>
+        
+        <div class="order-footer">
+          <div class="order-total">Total: ₦${(order.totalAmount / 100).toFixed(2)}</div>
+          <div class="order-actions">
+           <a href="https://wa.me/2348126832604?text=Hello%20Iyke%20Store!%20I%20need%20help%20with%20Order%20${order._id}%0A%0AOrder%20Date:%20${new Date(order.createdAt).toLocaleDateString()}" target="_blank" class="btn btn-secondary">Contact Support</a>
+
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = `<div class="orders-list">${ordersHTML}</div>`;
+}
+
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.getElementById('logout-icon');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', logout);
+    }
+  });
+
+  // Initialize
+  console.log('🚀 Orders page loaded');
+  if (checkAuth()) {
+    fetchOrders();
+    updateCartBadge();
+  }
+</script>
+</body>
+</html>

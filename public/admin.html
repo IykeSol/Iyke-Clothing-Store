@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - Iyke Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f9fafb; }
+    
+    /* Header */
+    .header { background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+    .header-content { max-width: 1280px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .header h1 { font-size: 1.5rem; font-weight: bold; }
+    .header-nav { display: flex; gap: 1rem; }
+    .nav-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.625rem 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,0.3); }
+    .logout-btn { background: rgba(239, 68, 68, 0.2); color: white; border: none; padding: 0.625rem 1.25rem; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+    .logout-btn:hover { background: rgba(239, 68, 68, 0.3); }
+    
+    /* Container */
+    .container { max-width: 1280px; margin: 0 auto; padding: 2rem 1.5rem; }
+    
+    /* Section */
+    .section { display: none; }
+    .section.active { display: block; }
+    
+    /* Card */
+    .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; margin-bottom: 2rem; }
+    .card h2 { font-size: 1.25rem; font-weight: bold; margin-bottom: 1rem; color: #111827; }
+    
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+    .form-input, .form-textarea { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; font-family: inherit; }
+    .form-input:focus, .form-textarea:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    .form-textarea { resize: vertical; }
+    .helper-text { font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem; }
+    
+    /* Preview */
+    .preview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin: 1rem 0; }
+    .preview-img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; }
+    
+    /* Buttons */
+    .submit-btn { width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%); color: white; font-weight: 600; padding: 0.875rem; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem; }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    
+    .status-msg { text-align: center; font-size: 0.875rem; margin-top: 0.75rem; }
+    .status-msg.success { color: #10b981; }
+    .status-msg.error { color: #ef4444; }
+    
+    /* Products List */
+    .product-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 0.75rem; transition: all 0.2s; }
+    .product-item:hover { background: #f9fafb; border-color: #3b82f6; }
+    .product-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background: #e5e7eb; }
+    .product-info { flex: 1; }
+    .product-name { font-weight: 600; color: #111827; margin-bottom: 0.25rem; }
+    .product-meta { font-size: 0.875rem; color: #6b7280; }
+    .product-actions { display: flex; gap: 0.5rem; }
+    .action-btn { padding: 0.5rem 0.875rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8125rem; font-weight: 500; transition: all 0.2s; }
+    .toggle-btn { background: #fef3c7; color: #92400e; }
+    .toggle-btn.available { background: #d1fae5; color: #065f46; }
+    .delete-btn { background: #fee2e2; color: #991b1b; }
+    .action-btn:hover { opacity: 0.8; }
+    
+    .empty-products { text-align: center; padding: 3rem 1rem; color: #6b7280; }
+    
+    /* Orders */
+    .order-card { background: white; padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .order-header { display: flex; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem; }
+    .order-id { font-size: 1.125rem; font-weight: bold; color: #111827; }
+    .order-badges { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .badge { padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+    .order-total { font-size: 1.25rem; font-weight: bold; color: #111827; }
+    .order-meta { font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem; }
+    .order-items { margin-bottom: 1rem; }
+    .order-item { font-size: 0.875rem; color: #374151; padding: 0.25rem 0; }
+    .order-shipping { margin-bottom: 1rem; font-size: 0.875rem; color: #374151; }
+    .order-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .confirm-btn { background: #10b981; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; }
+    .confirm-btn:hover { background: #059669; }
+    .status-select { padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; }
+    
+    /* Filters */
+    .filters { margin-bottom: 1rem; }
+    .filter-select { padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.875rem; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+      .preview-grid { grid-template-columns: repeat(3, 1fr); }
+      .product-item { flex-direction: column; align-items: flex-start; }
+      .header-nav { flex-direction: column; gap: 0.5rem; width: 100%; }
+      .nav-btn { width: 100%; }
+      .order-header { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <h1>Admin Dashboard</h1>
+      <div class="header-nav">
+        <button class="nav-btn active" data-section="products">Products</button>
+        <button class="nav-btn" data-section="orders">Orders</button>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Products Section -->
+    <section id="products-section" class="section active">
+      <!-- Add Product -->
+      <div class="card">
+        <h2>Add New Product</h2>
+        
+        <form id="product-form" class="form-grid" enctype="multipart/form-data">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Product Name</label>
+              <input id="name" type="text" required class="form-input" placeholder="e.g. Classic White T-Shirt" />
+            </div>
+            
+            <div class="form-group">
+              <label>Slug (URL-friendly)</label>
+              <input id="slug" type="text" required class="form-input" placeholder="e.g. classic-white-tshirt" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" rows="3" class="form-textarea" placeholder="Describe the product..."></textarea>
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label>Price (₦)</label>
+              <input id="price" type="number" required min="0" step="0.01" class="form-input" placeholder="5000.00" />
+            </div>
+            
+            <div class="form-group">
+              <label>Stock Quantity</label>
+              <input id="stock" type="number" required min="0" class="form-input" placeholder="50" />
+            </div>
+            
+            <div class="form-group">
+              <label>Category</label>
+              <input id="category" type="text" class="form-input" placeholder="e.g. T-Shirts" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Sizes (comma separated)</label>
+            <input id="sizes" type="text" required class="form-input" placeholder="S, M, L, XL, XXL" />
+          </div>
+
+          <div class="form-group">
+            <label>Product Images (Max 5)</label>
+            <input id="images" type="file" multiple accept="image/*" class="form-input" />
+            <p class="helper-text">Upload up to 5 images (JPG, PNG, WebP). Max 5MB each.</p>
+          </div>
+
+          <div id="preview-container" class="preview-grid"></div>
+
+          <button type="submit" class="submit-btn">Create Product</button>
+
+          <p id="status-message" class="status-msg"></p>
+        </form>
+      </div>
+
+      <!-- Products List -->
+      <div class="card">
+        <h2>All Products</h2>
+        <div id="products-list"></div>
+      </div>
+    </section>
+
+    <!-- Orders Section -->
+    <section id="orders-section" class="section">
+      <div class="card">
+        <h2>📦 Orders Management</h2>
+        <div class="filters">
+          <select id="order-status-filter" class="filter-select">
+            <option value="all">All Orders</option>
+            <option value="pending">Pending Payment</option>
+            <option value="paid">Paid</option>
+            <option value="processing">Processing</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div id="orders-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function getToken() {
+      return localStorage.getItem('accessToken') || '';
+    }
+
+    // Navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const section = btn.dataset.section;
+        
+        // Update active nav button
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Show section
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`${section}-section`).classList.add('active');
+        
+        // Load data
+        if (section === 'orders') {
+          loadOrders();
+        } else if (section === 'products') {
+          loadProducts();
+        }
+      });
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('userId');
+      window.location.href = '/login.html';
+    });
+
+    // ========== PRODUCTS ==========
+
+    // Image preview
+    document.getElementById('images').addEventListener('change', (e) => {
+      const container = document.getElementById('preview-container');
+      container.innerHTML = '';
+      
+      Array.from(e.target.files).slice(0, 5).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.className = 'preview-img';
+          container.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    // Submit form
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const token = getToken();
+      if (!token) {
+        alert('Please login first');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      const formData = new FormData();
+      const priceNaira = parseFloat(document.getElementById('price').value || '0');
+      
+      formData.append('name', document.getElementById('name').value.trim());
+      formData.append('slug', document.getElementById('slug').value.trim());
+      formData.append('description', document.getElementById('description').value.trim());
+      formData.append('price', Math.round(priceNaira * 100));
+      formData.append('stock', document.getElementById('stock').value);
+      formData.append('category', document.getElementById('category').value.trim());
+      formData.append('sizes', document.getElementById('sizes').value);
+      
+      const files = document.getElementById('images').files;
+      for (let i = 0; i < files.length && i < 5; i++) {
+        formData.append('images', files[i]);
+      }
+
+      const statusEl = document.getElementById('status-message');
+      const btn = e.target.querySelector('button[type="submit"]');
+      
+      statusEl.textContent = 'Uploading...';
+      statusEl.className = 'status-msg';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/admin/products', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+
+        const data = await res.json();
+        
+        if (!res.ok) {
+          statusEl.textContent = data.error || 'Failed to create product';
+          statusEl.className = 'status-msg error';
+          btn.disabled = false;
+          return;
+        }
+
+        statusEl.textContent = '✓ Product created successfully!';
+        statusEl.className = 'status-msg success';
+        
+        document.getElementById('product-form').reset();
+        document.getElementById('preview-container').innerHTML = '';
+        
+        btn.disabled = false;
+        loadProducts();
+      } catch (error) {
+        statusEl.textContent = 'Error: ' + error.message;
+        statusEl.className = 'status-msg error';
+        btn.disabled = false;
+      }
+    });
+
+    async function loadProducts() {
+      const token = getToken();
+      try {
+        const res = await fetch('/api/admin/products', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = await res.json();
+        const container = document.getElementById('products-list');
+        container.innerHTML = '';
+
+        if (data.products.length === 0) {
+          container.innerHTML = '<p class="empty-products">No products yet</p>';
+          return;
+        }
+
+        data.products.forEach((p) => {
+          const div = document.createElement('div');
+          div.className = 'product-item';
+          
+          const imageUrl = p.images && p.images[0] ? p.images[0] : 'https://via.placeholder.com/80';
+          
+          div.innerHTML = `
+            <img src="${imageUrl}" alt="${p.name}" class="product-img" />
+            <div class="product-info">
+              <h3 class="product-name">${p.name}</h3>
+              <p class="product-meta">₦${(p.price / 100).toFixed(2)} • Stock: ${p.stock} • ${p.available ? 'Available' : 'Unavailable'}</p>
+            </div>
+            <div class="product-actions">
+              <button class="action-btn toggle-btn ${p.available ? 'available' : ''}" data-product-id="${p._id}" data-available="${!p.available}">
+                ${p.available ? 'Hide' : 'Show'}
+              </button>
+              <button class="action-btn delete-btn" data-product-id="${p._id}">Delete</button>
+            </div>
+          `;
+          
+          container.appendChild(div);
+        });
+        
+        // Attach event listeners to buttons
+        document.querySelectorAll('.toggle-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-product-id');
+            const available = this.getAttribute('data-available') === 'true';
+            toggleAvailability(id, available);
+          });
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-product-id');
+            deleteProduct(id);
+          });
+        });
+      } catch (error) {
+        console.error('Error loading products:', error);
+      }
+    }
+
+    async function toggleAvailability(id, available) {
+      const token = getToken();
+      await fetch(`/api/admin/products/${id}/availability`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ available }),
+      });
+      loadProducts();
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      const token = getToken();
+      await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      loadProducts();
+    }
+
+    // ========== ORDERS ==========
+
+    async function loadOrders() {
+      try {
+        const token = getToken();
+        const res = await fetch('/api/admin/orders', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        displayOrders(data.orders);
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        document.getElementById('orders-list').innerHTML = '<p class="empty-products">Failed to load orders</p>';
+      }
+    }
+
+    function displayOrders(orders) {
+      const container = document.getElementById('orders-list');
+      
+      if (orders.length === 0) {
+        container.innerHTML = '<p class="empty-products">No orders found</p>';
+        return;
+      }
+      
+      container.innerHTML = orders.map(order => `
+        <div class="order-card" data-order-id="${order._id}">
+          <div class="order-header">
+            <div>
+              <h3 class="order-id">Order #${order._id.substring(0, 10)}</h3>
+              <p class="order-meta">
+                <strong>Customer:</strong> ${order.user?.name || 'N/A'} (${order.user?.email || 'N/A'})<br>
+                <strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}<br>
+                <strong>Payment:</strong> ${order.paymentProvider} | <strong>Ref:</strong> ${order.reference}
+              </p>
+            </div>
+            <div>
+              <div class="order-badges">
+                <span class="badge ${order.paymentStatus === 'paid' ? 'badge-success' : order.paymentStatus === 'pending' ? 'badge-warning' : 'badge-danger'}">
+                  ${order.paymentStatus.toUpperCase()}
+                </span>
+                <span class="badge ${order.status === 'delivered' ? 'badge-success' : order.status === 'shipped' ? 'badge-info' : order.status === 'processing' ? 'badge-warning' : 'badge-info'}">
+                  ${order.status.toUpperCase()}
+                </span>
+              </div>
+              <p class="order-total">₦${(order.totalAmount / 100).toFixed(2)}</p>
+            </div>
+          </div>
+          
+          <div class="order-items">
+            <strong>Items:</strong>
+            ${order.items.map(item => `
+              <div class="order-item">• ${item.name} - Size: ${item.size} - Qty: ${item.quantity} - ₦${(item.price / 100).toFixed(2)}</div>
+            `).join('')}
+          </div>
+          
+          <div class="order-shipping">
+            <strong>Shipping:</strong><br>
+            ${order.shipping.fullName}<br>
+            ${order.shipping.addressLine1}${order.shipping.addressLine2 ? ', ' + order.shipping.addressLine2 : ''}<br>
+            ${order.shipping.city}, ${order.shipping.state} ${order.shipping.postalCode}<br>
+            ${order.shipping.country} | Phone: ${order.shipping.phone}
+          </div>
+          
+          <div class="order-actions">
+            ${order.paymentStatus === 'pending' ? `
+              <button class="confirm-btn confirm-payment-btn" data-order-id="${order._id}">✅ Confirm Payment</button>
+            ` : ''}
+            
+            <select class="status-select order-status-select" data-order-id="${order._id}">
+              <option value="">Change Status...</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      `).join('');
+      
+      // Attach event listeners after rendering
+      attachOrderEventListeners();
+    }
+
+    function attachOrderEventListeners() {
+      // Confirm payment buttons
+      document.querySelectorAll('.confirm-payment-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const orderId = this.getAttribute('data-order-id');
+          confirmPayment(orderId);
+        });
+      });
+      
+      // Status select dropdowns
+      document.querySelectorAll('.order-status-select').forEach(select => {
+        select.addEventListener('change', function() {
+          const orderId = this.getAttribute('data-order-id');
+          const status = this.value;
+          updateOrderStatus(orderId, status);
+        });
+      });
+    }
+
+    async function confirmPayment(orderId) {
+      if (!confirm('Confirm that payment has been received?')) return;
+      
+      try {
+        const token = getToken();
+        const res = await fetch(`/api/admin/orders/${orderId}/payment`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ paymentStatus: 'paid' })
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        alert('✅ Payment confirmed successfully!');
+        loadOrders();
+      } catch (error) {
+        console.error('Error confirming payment:', error);
+        alert('Failed to confirm payment: ' + error.message);
+      }
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      if (!status) return;
+      
+      try {
+        const token = getToken();
+        const res = await fetch(`/api/admin/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        
+        alert('✅ Order status updated!');
+        loadOrders();
+      } catch (error) {
+        console.error('Error updating status:', error);
+        alert('Failed to update status: ' + error.message);
+        loadOrders();
+      }
+    }
+
+    // Order filter
+    document.getElementById('order-status-filter').addEventListener('change', (e) => {
+      const filter = e.target.value;
+      const cards = document.querySelectorAll('.order-card');
+      
+      cards.forEach(card => {
+        if (filter === 'all') {
+          card.style.display = 'block';
+        } else {
+          const badges = card.querySelectorAll('.badge');
+          let match = false;
+          badges.forEach(badge => {
+            if (badge.textContent.toLowerCase().includes(filter)) {
+              match = true;
+            }
+          });
+          card.style.display = match ? 'block' : 'none';
+        }
+      });
+    });
+
+    // Initial load
+    loadProducts();
+  </script>
+</body>
+</html>
